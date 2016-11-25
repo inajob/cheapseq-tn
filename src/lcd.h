@@ -117,7 +117,7 @@ byte genVram(char c){
     case '7': return 0B00110101;
     case '8': return 0B11110111;
     case '9': return 0B10110111;
-    case 'o': return 0B11000000;
+    case 'o': return 0B11000110;
     case 'O': return 0B00110011; // upper o
     case '_': return 0B10000000;
     case '~': return 0B00010000;
@@ -129,9 +129,26 @@ byte genVram(char c){
     case 'b': return 0B11100110;
     case 'C': return 0B11110000;
     case 'd': return 0B11000111;
+    case 'P': return 0B01110011;
+    case 'E': return 0B11110010;
+    case 'H': return 0B01100111;
+    case 'F': return 0B01110010;
+    case 't': return 0B00000110;
+    case 'T': return 0B01110000;
+    case 'U': return 0B11100101;
+    case 'r': return 0B01000010;
+    case 'n': return 0B01000110;
+    case 'Y': return 0B01100011;
   }
   return 0;
 }
+void genString(char* s, char* vram){
+  while(*(s)){
+    *(vram++) = genVram(*s++);
+  }
+}
+
+
 
 void lcd_fill(char* str){
   digitalWrite(CS, HIGH);

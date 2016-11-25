@@ -25,7 +25,18 @@ byte pmelody[8] = {255,255,255,255,255,255,255,255};
 
 #define M_PRYTHM 4
 #define M_PTONE 5
+
+
+#define E_SPEED 0
+#define E_SHIFT 1
+#define E_OCTAVE 2
+#define E_TUNE 3
+#define E_DETUNE 4
+#define E_DECAY 5
+#define E_RDECAY 6
+
 byte mode = M_RYTHM;
+byte emode = E_SPEED;
 byte cursor = 0;
 byte track = 0;
 byte pattern = 0;
@@ -33,6 +44,13 @@ byte rpattern = 0;
 
 byte rcount = 0;
 byte pcount = 0; // pattern count
+int speed = 0;
+int deTune = 0;
+int decay = 16;
+int rdecay = 16;
+
+int msgTimer = 0;
+char msg[12];
 
 
 
@@ -53,6 +71,78 @@ void loop(){
   //Serial.println(ecount);
 }
 
+void showEmode(){
+  msgTimer = 256;
+  char buf[12];
+  switch(emode){
+    case E_SPEED:
+      sprintf(buf, "   5PEEd %03d", speed);
+      genString(buf ,msg);
+      break;
+    case E_SHIFT:
+      sprintf(buf, "   5H1FT %03d", shiftTone);
+      genString(buf ,msg);
+      break;
+    case E_OCTAVE:
+      sprintf(buf, "   oCTA %04d", octave);
+      genString(buf ,msg);
+      break;
+     case E_TUNE:
+      sprintf(buf, "   TUnE %04d", shiftTune);
+      genString(buf ,msg);
+      break;
+     case E_DETUNE:
+      sprintf(buf, "   dETUnE %02d", deTune);
+      genString(buf ,msg);
+      break;
+      case E_DECAY:
+      sprintf(buf, "   dECAY %03d", decay);
+      genString(buf ,msg);
+      break;
+      case E_RDECAY:
+      sprintf(buf, "   rdECAY %02d", rdecay);
+      genString(buf ,msg);
+      break;
+
+  }
+}
+
+void rotate(char n){
+  static char acc = 0;
+  acc += n;
+
+  char diff;
+
+  if(abs(acc) >= 4){
+    diff = (acc >> 2);
+
+    switch(emode){
+      case E_SPEED:
+        speed = speed + diff;
+        break;
+      case E_SHIFT:
+        shiftTone = shiftTone + diff;
+        break;
+      case E_OCTAVE:
+        octave = octave + diff;
+        break;
+       case E_TUNE:
+        shiftTune = shiftTune + diff;
+        break;
+       case E_DETUNE:
+        deTune = deTune + diff;
+        break;
+        case E_DECAY:
+        decay = decay + diff;
+        break;
+        case E_RDECAY:
+        rdecay = rdecay + diff;
+        break;
+    }
+    showEmode();
+    acc = 0;
+  }
+}
 
 void key(byte n){
   if(trigger[20] > 2){
@@ -78,6 +168,19 @@ void key(byte n){
         mode = M_PTONE;
 	return;
     }
+  }
+  if(trigger[21] > 2){
+    switch(n){
+      case 0: emode = E_SPEED;break;
+      case 1: emode = E_SHIFT;break;
+      case 2: emode = E_OCTAVE;break;
+      case 3: emode = E_TUNE;break;
+      case 4: emode = E_DETUNE;break;
+      case 5: emode = E_DECAY;break;
+      case 6: emode = E_RDECAY;break;
+    }
+    showEmode();
+    return;
   }
   switch(mode){
   case M_RYTHM:
@@ -139,7 +242,7 @@ void key(byte n){
 
 void rythmApp(){
   static byte count = 0;
-  static int dcount = 0;
+  static unsigned int dcount = 0;
   char vram[12];
   byte tmp;
   switch(mode){
@@ -226,10 +329,18 @@ void rythmApp(){
     break;
   }
 
-  lcd_fill(vram);
+  if(msgTimer > 0){
+    msgTimer --;
+    lcd_fill(msg);
+  }else{
+    lcd_fill(vram);
+  }
 
+  // set detune
+  vol[1] = vol[0];
+  d[1] = d[0] + deTune;
 
-  if(count > (ecount>>2) + 0xf){
+  if(count > speed + 0xf){
     count = 0;
     if(rpattern != 255){
       // play rythm
@@ -240,11 +351,9 @@ void rythmApp(){
     }
     if(pattern != 255){
       // play melody
-      for(byte i = 0; i < 4; i ++){
-        if(melody[pattern][rcount] != 255){
-          d[i] = getRawTone(melody[pattern][rcount]);
-          vol[i] = 12;
-        }
+      if(melody[pattern][rcount] != 255){
+        d[0] = getRawTone(melody[pattern][rcount]);
+        vol[0] = 12;
       }
     }
     rcount = (rcount + 1)%8;
@@ -260,7 +369,7 @@ void rythmApp(){
     }
   }
 
-  if((dcount & 0xf) == 0xf){
+  if((dcount & (0xffff >> rdecay)) == (0xffff >> rdecay)){
     if(nf != 0){
       nf = (nf >> 1);
     }
@@ -269,7 +378,7 @@ void rythmApp(){
     }
   }
 
-  if((dcount & 0xf) == 0xf){
+  if((dcount & (0xffff >> decay)) == (0xffff >> decay)){
     if(vol[0] > 0){vol[0] --;}
     if(vol[1] > 0){vol[1] --;}
     if(vol[2] > 0){vol[2] --;}

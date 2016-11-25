@@ -71,6 +71,7 @@ volatile unsigned int dn[5] = {0,0,0,0,0};       // work variable
 
 volatile unsigned char vol[5] = {0,0,0,0,0}; // volume par channel
 char octave = 1;
+int shiftTune = 0;
 char shiftTone = 12;
 char shiftMagic = 0;
 int noise = 50;
@@ -79,7 +80,7 @@ int noise2 = 50;
 volatile byte nf2 = 0;
 
 inline int getRawTone(byte no){
-  return  (tones[no]) << (octave);
+  return  (tones[no + shiftTone] + shiftTune) << (octave);
 }
 
 ISR(TIMER1_OVF_vect) {    // Timer/Counter1 Overflow

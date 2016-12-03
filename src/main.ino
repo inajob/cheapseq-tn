@@ -10,21 +10,37 @@ byte rythm[4][8] = {
 {0,0,0,0,0,0,0,0},
 {0,0,0,0,0,0,0,0}
 };
-byte melody[4][8] = {
+byte melody[8][8] = {
+{255,255,255,255,255,255,255,255},
+{255,255,255,255,255,255,255,255},
+{255,255,255,255,255,255,255,255},
+{255,255,255,255,255,255,255,255},
 {255,255,255,255,255,255,255,255},
 {255,255,255,255,255,255,255,255},
 {255,255,255,255,255,255,255,255},
 {255,255,255,255,255,255,255,255}
 };
 
+byte base[4][8] = {
+{255,255,255,255,255,255,255,255},
+{255,255,255,255,255,255,255,255},
+{255,255,255,255,255,255,255,255},
+{255,255,255,255,255,255,255,255},
+};
+
+
 byte prythm[8] = {255,255,255,255,255,255,255,255};
 byte pmelody[8] = {255,255,255,255,255,255,255,255};
+byte pbase[8] = {255,255,255,255,255,255,255,255};
 
 #define M_RYTHM 0
 #define M_TONE 1
+#define M_BASE 2
 
 #define M_PRYTHM 4
 #define M_PTONE 5
+#define M_PBASE 6
+#define M_PLAY 7
 
 
 #define E_SPEED 0
@@ -34,6 +50,19 @@ byte pmelody[8] = {255,255,255,255,255,255,255,255};
 #define E_DETUNE 4
 #define E_DECAY 5
 #define E_RDECAY 6
+#define E_OP2 7 
+#define E_VOL2 8 
+#define E_OP3 9 
+#define E_VOL3 10 
+#define E_OP4 11 
+#define E_VOL4 12 
+#define E_OP1 13 
+#define E_VOL1 14 
+#define E_BDECAY 15
+
+
+
+
 
 byte mode = M_RYTHM;
 byte emode = E_SPEED;
@@ -41,6 +70,7 @@ byte cursor = 0;
 byte track = 0;
 byte pattern = 0;
 byte rpattern = 0;
+byte bpattern = 0;
 
 byte rcount = 0;
 byte pcount = 0; // pattern count
@@ -48,6 +78,7 @@ int speed = 0;
 int deTune = 0;
 int decay = 16;
 int rdecay = 16;
+int bdecay = 16;
 
 int msgTimer = 0;
 char msg[12];
@@ -103,6 +134,47 @@ void showEmode(){
       sprintf(buf, "   rdECAY %02d", rdecay);
       genString(buf ,msg);
       break;
+      case E_BDECAY:
+      sprintf(buf, "   bdECAY %02d", bdecay);
+      genString(buf ,msg);
+      break;
+      case E_OP2:
+      sprintf(buf, "   oP2   %03d", d[2]);
+      genString(buf ,msg);
+      break;
+      case E_VOL2:
+      sprintf(buf, "   rAT2  %03d", vol[2]);
+      genString(buf ,msg);
+      break;
+      case E_OP3:
+      sprintf(buf, "   oP3   %03d", d[3]);
+      genString(buf ,msg);
+      break;
+      case E_VOL3:
+      sprintf(buf, "   rAT3  %03d", vol[3]);
+      genString(buf ,msg);
+      break;
+      case E_OP4:
+      sprintf(buf, "   oP4   %03d", d[4]);
+      genString(buf ,msg);
+      break;
+      case E_VOL4:
+      sprintf(buf, "   rAT4  %03d", vol[4]);
+      genString(buf ,msg);
+      break;
+      case E_OP1:
+      sprintf(buf, "   oP1   %03d", d[1]);
+      genString(buf ,msg);
+      break;
+      case E_VOL1:
+      sprintf(buf, "   rAT1  %03d", vol[1]);
+      genString(buf ,msg);
+      break;
+
+
+
+
+
 
   }
 }
@@ -138,6 +210,35 @@ void rotate(char n){
         case E_RDECAY:
         rdecay = rdecay + diff;
         break;
+        case E_BDECAY:
+        bdecay = bdecay + diff;
+        break;
+        case E_OP2:
+        d[2] = d[2] + diff;
+        break;
+        case E_VOL2:
+	vol[2] = vol[2] + diff;
+        break;
+        case E_OP3:
+        d[3] = d[3] + diff;
+        break;
+        case E_VOL3:
+	vol[3] = vol[3] + diff;
+        break;
+        case E_OP4:
+        d[4] = d[4] + diff;
+        break;
+        case E_VOL4:
+	vol[4] = vol[4] + diff;
+        break;
+        case E_OP1:
+        d[1] = d[1] + diff;
+        break;
+        case E_VOL1:
+	vol[1] = vol[1] + diff;
+        break;
+ 
+ 
     }
     showEmode();
     acc = 0;
@@ -151,12 +252,21 @@ void key(byte n){
         mode = M_RYTHM;
 	pattern = 0;
 	rpattern = 0;
+	bpattern = 0;
 	return;
       case 2:
         mode = M_TONE;
 	pattern = 0;
 	rpattern = 0;
+	bpattern = 0;
 	return;
+      case 4:
+        mode = M_BASE;
+	pattern = 0;
+	rpattern = 0;
+	bpattern = 0;
+	return;
+
       case 7:
         mode = M_PRYTHM;
 	rcount = 0;
@@ -167,6 +277,17 @@ void key(byte n){
 	pcount = 0;
         mode = M_PTONE;
 	return;
+      case 11:
+	rcount = 0;
+	pcount = 0;
+        mode = M_PBASE;
+	return;
+      case 13:
+	rcount = 0;
+	pcount = 0;
+        mode = M_PLAY;
+	return;
+
     }
   }
   if(trigger[21] > 2){
@@ -174,10 +295,19 @@ void key(byte n){
       case 0: emode = E_SPEED;break;
       case 1: emode = E_SHIFT;break;
       case 2: emode = E_OCTAVE;break;
-      case 3: emode = E_TUNE;break;
+      //case 3: emode = E_TUNE;break;
+      case 3: emode = E_BDECAY;break;
       case 4: emode = E_DETUNE;break;
       case 5: emode = E_DECAY;break;
       case 6: emode = E_RDECAY;break;
+      case 7: emode = E_OP2;break;
+      case 8: emode = E_VOL2;break;
+      case 9: emode = E_OP3;break;
+      case 10: emode = E_VOL3;break;
+      case 11: emode = E_OP4;break;
+      case 12: emode = E_VOL4;break;
+      case 23: emode = E_OP1;break;
+      case 24: emode = E_VOL1;break;
     }
     showEmode();
     return;
@@ -200,8 +330,8 @@ void key(byte n){
     break;
   case M_TONE:
     if(n <= 12){
-      d[1] = getRawTone(n);
-      vol[1] = 12;
+      //d[4] = getRawTone(n);
+      //vol[4] = 12;
       melody[pattern][cursor] = n;
     }else{
       switch(n){
@@ -209,11 +339,28 @@ void key(byte n){
         case 25: cursor = (cursor + 1)&7; break;
         case 26: cursor = (cursor + 8 - 1)&7; break;
 	// todo: pattern max
-        case 23: pattern = (pattern + 1)&3; break;
-        case 24: pattern = (pattern + 4 - 1)&3; break;
+        case 23: pattern = (pattern + 1)&7; break;
+        case 24: pattern = (pattern + 8 - 1)&7; break;
       }
     }
     break;
+  case M_BASE:
+    if(n <= 12){
+      //d[4] = getRawTone(n);
+      //vol[4] = 12;
+      base[bpattern][cursor] = n;
+    }else{
+      switch(n){
+        case 22: base[bpattern][cursor] = 255; break;
+        case 25: cursor = (cursor + 1)&7; break;
+        case 26: cursor = (cursor + 8 - 1)&7; break;
+	// todo: pattern max
+        case 23: bpattern = (bpattern + 1)&3; break;
+        case 24: bpattern = (bpattern + 4 - 1)&3; break;
+      }
+    }
+    break;
+ 
   case M_PRYTHM:
     if(n <= 12){
       prythm[cursor] = n;
@@ -236,6 +383,24 @@ void key(byte n){
       }
     }
     break;
+  case M_PBASE:
+    if(n <= 12){
+      pbase[cursor] = n;
+    }else{
+      switch(n){
+        case 22: pbase[cursor] = 255; break;
+        case 25: cursor = (cursor + 1)&7; break;
+        case 26: cursor = (cursor + 8 - 1)&7; break;
+      }
+    }
+    break;
+ 
+  case M_PLAY:
+    if(n <= 12){
+      //d[4] = getRawTone(n);
+      //vol[4] = 12;
+    }
+    break;
   }
 }
 
@@ -244,6 +409,7 @@ void rythmApp(){
   static byte count = 0;
   static unsigned int dcount = 0;
   char vram[12];
+  char buf[12];
   byte tmp;
   switch(mode){
   case M_RYTHM:
@@ -291,6 +457,35 @@ void rythmApp(){
       vram[4 + cursor] = 0;
     }
     break;
+  case M_BASE:
+    vram[0] = genVram(' ');
+    vram[1] = genVram('2');
+    vram[2] = genVram('0' + rcount);
+    vram[3] = genVram('0' + bpattern);
+
+    for(byte i = 4; i < 12; i ++){
+      switch(base[bpattern][i - 4]){
+        case 0: vram[i] = genVram('0'); break;
+        case 1: vram[i] = genVram('1'); break;
+        case 2: vram[i] = genVram('2'); break;
+        case 3: vram[i] = genVram('3'); break;
+        case 4: vram[i] = genVram('4'); break;
+        case 5: vram[i] = genVram('5'); break;
+        case 6: vram[i] = genVram('6'); break;
+        case 7: vram[i] = genVram('7'); break;
+        case 8: vram[i] = genVram('8'); break;
+        case 9: vram[i] = genVram('9'); break;
+        case 10: vram[i] = genVram('A'); break;
+        case 11: vram[i] = genVram('b'); break;
+        case 12: vram[i] = genVram('C'); break;
+        case 255: vram[i] = genVram('-'); break;
+      }
+    }
+    if((dcount & 0B100000) == 0B100000){
+      vram[4 + cursor] = 0;
+    }
+    break;
+ 
   case M_PRYTHM:
     vram[0] = genVram(' ');
     vram[1] = genVram('4');
@@ -327,6 +522,29 @@ void rythmApp(){
       vram[4 + cursor] = 0;
     }
     break;
+  case M_PBASE:
+    vram[0] = genVram(' ');
+    vram[1] = genVram('5');
+    vram[2] = genVram('0' + rcount);
+    vram[3] = genVram(' ');
+
+    for(byte i = 4; i < 12; i ++){
+      if(pbase[i - 4] != 255){
+        vram[i] = genVram('0' + pbase[i - 4]);
+      }else{
+        vram[i] = genVram('-');
+      }
+    }
+
+    if((dcount & 0B100000) == 0B100000){
+      vram[4 + cursor] = 0;
+    }
+    break;
+ 
+  case M_PLAY:
+    strcpy(buf, "   P1AY     ");
+    genString(buf ,vram);
+    break;
   }
 
   if(msgTimer > 0){
@@ -336,9 +554,9 @@ void rythmApp(){
     lcd_fill(vram);
   }
 
-  // set detune
-  vol[1] = vol[0];
-  d[1] = d[0] + deTune;
+  //// set detune
+  vol[0] = vol[1];
+  d[0] = d[1] + deTune;
 
   if(count > speed + 0xf){
     count = 0;
@@ -352,17 +570,29 @@ void rythmApp(){
     if(pattern != 255){
       // play melody
       if(melody[pattern][rcount] != 255){
-        d[0] = getRawTone(melody[pattern][rcount]);
-        vol[0] = 12;
+        d[1] = getRawTone(melody[pattern][rcount]);
+        vol[1] = 12;
+        //vol[2] = 64;
+        //vol[3] = 64;
       }
     }
+    if(bpattern != 255){
+      // play melody
+      if(base[bpattern][rcount] != 255){
+        d[3] = (getRawTone(base[bpattern][rcount])) >> 3;
+        vol[3] = 12;
+      }
+    }
+ 
     rcount = (rcount + 1)%8;
     switch(mode){
       case M_PRYTHM:
       case M_PTONE:
+      case M_PBASE:
       if(rcount == 0){
         rpattern = prythm[pcount];
         pattern = pmelody[pcount];
+        bpattern = pbase[pcount];
         pcount = (pcount + 1) & 7;
       }
       break;
@@ -379,11 +609,17 @@ void rythmApp(){
   }
 
   if((dcount & (0xffff >> decay)) == (0xffff >> decay)){
-    if(vol[0] > 0){vol[0] --;}
+    //if(vol[4] > 0){vol[4] --;}
     if(vol[1] > 0){vol[1] --;}
-    if(vol[2] > 0){vol[2] --;}
+
+    //if(vol[2] > 0){vol[2] --;}
+ 
+ }
+
+ if((dcount & (0xffff >> bdecay)) == (0xffff >> bdecay)){
     if(vol[3] > 0){vol[3] --;}
-  }
+ }
+
 
   count ++;
   dcount ++;

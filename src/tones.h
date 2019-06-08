@@ -191,6 +191,7 @@ ISR(TIMER1_OVF_vect) {    // Timer/Counter1 Overflow
 
 void tones_init(){
   pinMode(9,OUTPUT);
+  pinMode(6,INPUT);
 
   
   // 3-pwm ,pwm
@@ -204,6 +205,8 @@ void tones_init(){
   OCR1A = 80; // for debug
   TCNT1 = timerLoadValue;
   
+  //TCCR0A = 0xC1;
+  //TCCR1B = _BV(CS20);
   
   vol[0] = vol[1] = vol[2] = vol[3] = vol[4] = 0;
   d[0] = d[1] = d[2] = d[3] = d[4] = 0;

@@ -36,25 +36,25 @@ void keys_scan(){
     case 0:
       pinMode(4, OUTPUT);digitalWrite(4, LOW);
       pinMode(5, INPUT);
-      pinMode(6, INPUT);
+      pinMode(8, INPUT);
       pinMode(7, INPUT);
     break;
     case 1:
       pinMode(4, INPUT);
       pinMode(5, OUTPUT);digitalWrite(5, LOW);
-      pinMode(6, INPUT);
+      pinMode(8, INPUT);
       pinMode(7, INPUT);
     break;
     case 2:
       pinMode(4, INPUT);
       pinMode(5, INPUT);
-      pinMode(6, OUTPUT);digitalWrite(6, LOW);
+      pinMode(8, OUTPUT);digitalWrite(8, LOW);
       pinMode(7, INPUT);
     break;
     case 3:
       pinMode(4, INPUT);
       pinMode(5, INPUT);
-      pinMode(6, INPUT);
+      pinMode(8, INPUT);
       pinMode(7, OUTPUT);digitalWrite(7, LOW);
     break;
   }
